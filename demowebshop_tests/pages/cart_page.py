@@ -1,4 +1,7 @@
+import json
+
 import allure
+from allure_commons.types import AttachmentType
 from selene import browser, query
 import requests
 
@@ -14,12 +17,17 @@ class AddProduct:
         for id_product in id_products:
             with allure.step(f'Отправка POST запроса с ID товара {id_product}'):
                 response = self.session.post(url + id_product)
+                allure.attach(body=json.dumps(response.json(), indent=4, ensure_ascii=True), name='Response',
+                              attachment_type=AttachmentType.JSON, extension='json')
+
                 with allure.step('Проверка Status Code'):
                     assert response.status_code == 200
         with allure.step('Получение cookie'):
             self.cookie = response.cookies.get('Nop.customer')
+            allure.attach(body=str(response.cookies), name='Cookies', attachment_type=AttachmentType.TEXT,
+                          extension='txt')
 
-            return self
+        return self
 
     @allure.story('Открытие корзины')
     def open_cart(self):
